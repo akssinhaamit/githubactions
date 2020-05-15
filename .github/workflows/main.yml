@@ -10,6 +10,12 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  GITHUB_SHA: ${{ github.sha }} 
+  GITHUB_REF: ${{ github.ref }} 
+  IMAGE: docker-java-hello-world-app
+  REGISTRY_HOSTNAME: eu.gcr.io
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -26,5 +32,31 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11.0.4
-    - name: Maven Package
+    - name: Run Tests
       run: mvn clean install
+  
+  docker:
+    name: Publish - GCR
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup
+        uses: actions/checkout@v2
+      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: '270.0.0'
+          service_account_key: ${{ secrets.GCR_KEY }} 
+      # Configure docker to use the gcloud command-line tool as a credential helper
+      - run: |
+          gcloud auth configure-docker
+      
+      # Build the Docker image
+      - name: Build
+        run: |
+          export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
+          docker build -t "$REGISTRY_HOSTNAME"/"$IMAGE":latest .
+      
+      # Push the Docker image to Google Container Registry
+      - name: Publish
+        run: |
+          export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
+          docker push "$REGISTRY_HOSTNAME"/"$IMAGE":latest
