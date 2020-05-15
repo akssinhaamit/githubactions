@@ -15,6 +15,7 @@ env:
   GITHUB_REF: ${{ github.ref }} 
   IMAGE: docker-java-hello-world-app
   REGISTRY_HOSTNAME: eu.gcr.io
+  HOST: ${{ secrets.GOOGLE_PROJECT_ID }}
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -53,10 +54,10 @@ jobs:
       - name: Build
         run: |
           export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
-          docker build -t "$REGISTRY_HOSTNAME"/${{ secrets.GOOGLE_PROJECT_ID }}/"$IMAGE":latest .
+          docker build -t "$REGISTRY_HOSTNAME"/"$HOST"/"$IMAGE":latest .
       
       # Push the Docker image to Google Container Registry
       - name: Publish
         run: |
           export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
-          docker push "$REGISTRY_HOSTNAME"/${{ secrets.GOOGLE_PROJECT_ID }}/"$IMAGE":latest
+          docker push "$REGISTRY_HOSTNAME"/"$HOST"/"$IMAGE":latest
