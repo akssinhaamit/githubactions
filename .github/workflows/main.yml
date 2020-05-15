@@ -53,10 +53,10 @@ jobs:
       - name: Build
         run: |
           export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
-          docker build -t "$REGISTRY_HOSTNAME"/"$IMAGE":latest .
+          docker build -t "$REGISTRY_HOSTNAME"/${{ secrets.GOOGLE_PROJECT_ID }}/"$IMAGE":latest .
       
       # Push the Docker image to Google Container Registry
       - name: Publish
         run: |
           export TAG=`echo $GITHUB_REF | awk -F/ '{print $NF}'`
-          docker push "$REGISTRY_HOSTNAME"/"$IMAGE":latest
+          docker push "$REGISTRY_HOSTNAME"/${{ secrets.GOOGLE_PROJECT_ID }}/"$IMAGE":latest
